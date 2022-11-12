@@ -1,0 +1,215 @@
+// In The Shadows: Mission 2, "X Marks the Spot"
+// By {SFP} Sonic, sonic@starfleetplatoon.com
+
+[objects]
+Player
+Recycler
+Factory
+Enemy_Recycler
+Enemy_Factory
+Enemy_Armory
+NewUnit
+Engineer
+Major
+NorthPortal
+Attacker
+Target
+Effect
+
+[positions]
+Portal,0,0,0
+Cam,5,15,10
+
+[variables]
+DL,0
+
+[text]
+Objective1,
+"Destroy Enemy Base"
+
+Objective2,
+"Do NOT destroy Enemy\nStronghold!"
+
+Objective3,
+"Your Recycler Must Survive!"
+
+Objective4,
+"Go to Enemy Stronghold"
+
+[routine,Main,1,true]
+GetPlayer,Player
+Replace,Player,"fvsent",false
+TeamColor,1,0,192,18
+SetScrap,5,40
+SetScrap,1,40
+SetPlan,"its2.aip",5
+RunSpeed,TheStronghold,1,true
+Audio,"its2a.wav"
+Clear
+Display,Objective1,white
+Display,Objective2,turquoise
+Display,Objective3,white
+GetByTS,Enemy_Recycler,5,1
+CHECK:
+	IsAround,Enemy_Recycler
+	IfEQ,true,CHECK
+GetByTS,Enemy_Factory,5,2
+CHECK2:
+	IsAround,Enemy_Factory
+	IfEQ,true,CHECK2
+Clear
+Display,Objective1,green
+Display,Objective2,turquoise
+Display,Objective4,white
+Audio,"its2b.wav"
+RunSpeed,PortalAttack,0,false
+RunSpeed,NastySuprise,1,true
+DOWNLOAD:
+	DistObject,Player,Enemy_Armory
+	IfGT,40,DOWNLOAD
+	Add,DL,4,DL
+	SetName,Enemy_Armory,"DL %i%% Complete",DL
+	IfLT,100,DOWNLOAD
+COMPLETE:
+RunSpeed,TheStronghold,0,false
+Clear
+Display,Objective4,green
+Audio,"its2c.wav"
+Succeed,10,"win2.txt"
+
+
+[routine,TheStronghold,0,false]
+GetByTS,Enemy_Armory,5,3
+BeaconOn,Enemy_Armory
+CHECK:
+	IsAround,Enemy_Armory
+	IfEQ,true,CHECK
+Clear
+Display,Objective2,red
+Fail,10,"lose2s.txt"
+
+[routine,PortalAttack,1,true]
+GetByLabel,NorthPortal,"PortalA2"
+GetPos,NorthPortal,Portal
+AddToPos,0,0,-15,Portal
+START:
+	Wait,300
+	Create,Effect,"xteleout",0,Portal
+	Create,Attacker,">fvltank_m2",5,Portal
+	Attack,Attacker,Recycler,1
+	Wait,1
+	Create,Attacker,">fvltank_m2",5,Portal
+	Attack,Attacker,Recycler,1
+	Wait,1
+	Create,Attacker,">fvltank_m2",5,Portal
+	Attack,Attacker,Recycler,1
+	Wait,1
+	Create,Attacker,">fvltank_m2",5,Portal
+	Attack,Attacker,Recycler,1
+	Wait,1
+	JumpTo,START
+
+[routine,NastySuprise,0,false]
+Wait,15
+Create,Effect,"xteleout",0,Portal
+Create,Attacker,"fvwalk",9,Portal
+Attack,Attacker,Enemy_Armory,1
+Wait,1
+Create,Effect,"xteleout",0,Portal
+Create,Attacker,"fvwalk",9,Portal
+Attack,Attacker,Enemy_Armory,1
+
+[routine,CheckPlayer,1,true]
+GetByLabel,Recycler,"recy"
+SetScrap,1,40
+CHECK:
+	IsAround,Recycler
+	IfEQ,true,CHECK
+Clear
+Display,Objective3,red
+Fail,10,"lose2r.txt"
+
+[routine,TheMajor,1,true]
+GetByLabel,Major,"major"
+SetName,Major,"Thomas Stephens"
+Patrol,Major,"major",1
+CamObject,Recycler,Cam,Major,5
+RunSpeed,TheMajor,2,true
+GiveWeapon,Major,"gquill_c"
+GiveWeapon,Major,"gshield"
+CHECK:
+	HasPilot,Major
+	IfEQ,false,DEAD
+	GetCurHealth,Major
+	IfGT,1000,CHECK
+AddHealth,Major,2000
+JumpTo,CHECK
+DEAD:
+Fail,10,"genfail.txt"
+
+[routine,Eng,1,true]
+Ally,5,6
+Wait,50
+SetPlan,"eng2.aip",6
+START:
+	Createp,Engineer,"fveng",6,"eng"
+CHECK:
+	IsAround,Engineer
+	IfEQ,true,CHECK
+Wait,120
+GetByTS,Enemy_Recycler,5,1
+IsAround,Enemy_Recycler
+IfEQ,true,START
+
+[routine,NewObjectRoutine,1,true]
+OnNewObject,100,NewObjectRoutine,NewUnit
+START:
+RunSpeed,NewObjectRoutine,0,true
+GetByTS,Enemy_Armory,5,3
+IsAround,Enemy_Armory
+IfEQ,false,START
+GetTeam,NewUnit
+IfNE,5,START
+SetSkill,NewUnit,3
+BEGIN:
+IsODF,NewUnit,"fvscout"
+IfEQ,false,NOT_SCOUT
+GiveWeapon,NewUnit,"gquill_c"
+GiveWeapon,NewUnit,"gshield"
+JumpTo,START
+NOT_SCOUT:
+IsODF,NewUnit,"fvfish"
+IfEQ,false,NOT_DRAGOON
+GiveWeapon,NewUnit,"garc_c"
+JumpTo,START
+NOT_DRAGOON:
+IsODF,NewUnit,"fvtank"
+IfEQ,false,NOT_TANK
+GiveWeapon,NewUnit,"gomburst2_c"
+GiveWeapon,NewUnit,"gshield"
+JumpTo,START
+NOT_TANK:
+IsODF,NewUnit,"fvsent"
+IfEQ,false,NOT_SENTRY
+GiveWeapon,NewUnit,"ggauss"
+GiveWeapon,NewUnit,"gshield"
+JumpTo,START
+NOT_SENTRY:
+IsODF,NewUnit,"fvarch"
+IfEQ,false,START
+GiveWeapon,NewUnit,"gquant_c"
+GiveWeapon,NewUnit,"gabsorb"
+JumpTo,START
+
+[routine,Birds,1,true]
+Wait,15
+SpawnBirds,5,"mcwing01",0,"birds1"
+Wait,15
+SpawnBirds,5,"mcwing01",0,"birds2"
+Wait,15
+SpawnBirds,3,"mcwing01",0,"birds3"
+
+[routine,ThePlayer,1,true]
+START:
+	GetPlayer,Player
+	JumpTo,START

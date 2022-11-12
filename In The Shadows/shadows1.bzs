@@ -1,0 +1,171 @@
+// In The Shadows: Mission 1, "Bad Times"
+// By {SFP} Sonic, sonic@starfleetplatoon.com
+
+[objects]
+Player
+Recycler
+Enemy_Recycler
+Enemy_Factory
+Enemy_Armory
+Enemy_Bomber
+TheBomber
+NewUnit
+Engineer
+Major
+
+[positions]
+
+[variables]
+
+[text]
+Objective1,
+"Defend Recycler"
+
+Objective2,
+"Investigate Unkown\nObject"
+
+Objective3,
+"Destroy Bomber!"
+
+Objective4,
+"Destroy Enemy Base"
+
+[routine,Main,1,true]
+GetByTS,Recycler,1,1
+GetByTS,Enemy_Recycler,5,1
+TeamColor,1,0,192,18
+TeamColor,2,0,192,18
+SetScrap,1,40
+RunSpeed,CheckPlayer,1,true
+SetPlan,"its1.aip",5
+Audio,"its1a.wav"
+Clear
+Display,Objective1,white
+Wait,10
+BOMBER:
+	GetByLabel,Enemy_Bomber,"unnamed_fbbomb"
+	IsAround,Enemy_Bomber
+	IfEQ,false,BOMBER
+SetName,Enemy_Bomber,"Unkown Object"
+BeaconOn,Enemy_Bomber
+Display,Objective2,white
+Audio,"its1b.wav"
+CHECK:
+	DistObject,Player,Enemy_Bomber
+	IfGT,400,CHECK
+BeaconOff,Enemy_Bomber
+Audio,"its1c.wav"
+GetByLabel,TheBomber,"unnamed_fvbomb"
+Attack,TheBomber,Recycler,1
+Audio,"its1d.wav"
+BeaconOn,TheBomber
+Clear
+Display,Objective3,white
+CHECK2:
+	IsAround,TheBomber
+	IfEQ,true,CHECK2
+Clear
+Display,Objective3,green
+Audio,"its1e.wav"
+Display,Objective4,white
+FINAL:
+	IsAround,Enemy_Recycler
+	IfEQ,true,FINAL
+	GetByTS,Enemy_Factory,5,2
+	IsAround,Enemy_Factory
+	IfEQ,true,FINAL
+Clear
+Display,Objective4,green
+Audio,"its1f.wav"
+Succeed,10,"win1.txt"
+
+[routine,CheckPlayer,0,false]
+CHECK:
+	IsAround,Recycler
+	IfEQ,true,CHECK
+Clear
+Display,Objective1,red
+Fail,10,"lose1r.txt"
+
+[routine,TheMajor,1,true]
+GetByLabel,Major,"major"
+SetName,Major,"Thomas Stephens"
+Patrol,Major,"major",1
+RunSpeed,TheMajor,2,true
+GiveWeapon,Major,"gquill_c"
+GiveWeapon,Major,"gshield"
+CHECK:
+	HasPilot,Major
+	IfEQ,false,DEAD
+	GetCurHealth,Major
+	IfGT,1000,CHECK
+AddHealth,Major,2000
+JumpTo,CHECK
+DEAD:
+Fail,10,"genfail.txt"
+
+[routine,Eng,1,true]
+Wait,10
+SetPlan,"eng1.aip",6
+Ally,5,6
+Wait,60
+START:
+	Createp,Engineer,"fveng",6,"eng"
+CHECK:
+	IsAround,Engineer
+	IfEQ,true,CHECK
+Wait,600
+GetByTS,Enemy_Recycler,5,1
+IsAround,Enemy_Recycler
+IfEQ,true,START
+
+[routine,FixIT,1,true]
+Wait,60
+GetByTS,Enemy_Recycler,5,1
+Replace,Enemy_Recycler,"fbrecy_s1",false
+
+[routine,NewObjectRoutine,1,true]
+OnNewObject,100,NewObjectRoutine,NewUnit
+START:
+RunSpeed,NewObjectRoutine,0,true
+GetByTS,Enemy_Armory,5,3
+IsAround,Enemy_Armory
+IfEQ,false,START
+GetTeam,NewUnit
+IfNE,5,START
+SetSkill,NewUnit,3
+BEGIN:
+IsODF,NewUnit,"fvscout"
+IfEQ,false,NOT_SCOUT
+GiveWeapon,NewUnit,"gquill_c"
+GiveWeapon,NewUnit,"gshield"
+JumpTo,START
+NOT_SCOUT:
+IsODF,NewUnit,"fvfish"
+IfEQ,false,NOT_DRAGOON
+GiveWeapon,NewUnit,"garc_c"
+JumpTo,START
+NOT_DRAGOON:
+IsODF,NewUnit,"fvtank"
+IfEQ,false,NOT_TANK
+GiveWeapon,NewUnit,"gomburst2_c"
+GiveWeapon,NewUnit,"gshield"
+JumpTo,START
+NOT_TANK:
+IsODF,NewUnit,"fvsent"
+IfEQ,false,NOT_SENTRY
+GiveWeapon,NewUnit,"ggauss"
+GiveWeapon,NewUnit,"gshield"
+JumpTo,START
+NOT_SENTRY:
+IsODF,NewUnit,"fvarch"
+IfEQ,false,START
+GiveWeapon,NewUnit,"gquant_c"
+GiveWeapon,NewUnit,"gabsorb"
+JumpTo,START
+
+
+[routine,ThePlayer,1,true]
+START:
+	GetPlayer,Player
+	JumpTo,START

@@ -1,0 +1,202 @@
+// In The Shadows: Mission 3, "Black Out"
+// By {SFP} Sonic, sonic@starfleetplatoon.com
+
+[objects]
+Player
+Major
+Recycler
+Enemy_Recycler
+Enemy_Factory
+Enemy_Armory
+Enemy_Dower
+Enemy_Over
+Engineer
+NewUnit
+Unit
+
+[positions]
+
+[variables]
+Distance,500
+
+[text]
+Objective1,
+"Destroy All Base Defences"
+
+Objective2,
+"Do NOT destroy base buildings!"
+
+[routine,Main,1,true]
+GetPlayer,Player
+Replace,Player,"fvscout",false
+GiveWeapon,Player,"gshield"
+GiveWeapon,Player,"gsonic_c"
+TeamColor,1,0,192,18
+SetScrap,1,40
+SetPlan,"its3.aip",5
+Audio,"its3a.wav"
+Clear
+Display,Objective1,white
+Display,Objective2,white
+CHECK:
+	NearObjectCount,Enemy_Factory,Distance,5,"fblung"
+	IfNE,0,CHECK
+Clear
+Display,Objective1,green
+Display,Objective2,green
+Audio,"its3c.wav"
+Succeed,10,"win3.txt"
+
+[routine,BuildingHeal,0,false]
+START:
+AddHealth,Enemy_Recycler,1000
+AddHealth,Enemy_Factory,1000
+AddHealth,Enemy_Armory,1000
+AddHealth,Enemy_Dower,1000
+AddHealth,Enemy_Over,1000
+Wait,600
+JumpTo,START
+
+[routine,BuildingCheck,1,true]
+GetByTS,Enemy_Recycler,5,1
+GetByTS,Enemy_Factory,5,2
+GetByTS,Enemy_Armory,5,3
+GetByLabel,Enemy_Dower,"dower"
+GetByLabel,Enemy_Over,"over"
+RunSpeed,BuildingCheck,2,true
+RunSpeed,BuildingHeal,1,true
+CHECK:
+	IsAround,Enemy_Recycler
+	IfEQ,false,DEAD
+	IsAround,Enemy_Factory
+	IfEQ,false,DEAD
+	IsAround,Enemy_Armory
+	IfEQ,false,DEAD
+	IsAround,Enemy_Dower
+	IfEQ,false,DEAD
+	IsAround,Enemy_Over
+	IfEQ,true,CHECK
+DEAD:
+Clear
+Display,Objective2,red
+Audio,"its3b.wav"
+Fail,10,"lose3b.txt"
+
+[routine,TheMajor,1,true]
+Createp,Major,"fvtank",1,"major1"
+SetName,Major,"Thomas Stephens"
+Stop,Major,1
+RunSpeed,MajorHealth,2,true
+GiveWeapon,Major,"gquill_c"
+GiveWeapon,Major,"gshield"
+START:
+	RandJump,PATH2,PATH3
+PATH1:
+	GoTo,Major,"major1",1
+	Wait,60
+	JumpTo,START
+PATH2:
+	GoTo,Major,"major2",1
+	Wait,60
+	JumpTo,START
+PATH3:
+	GoTo,Major,"major3",1
+	Wait,60
+	JumpTo,START
+
+
+[routine,MajorHealth,0,false]
+CHECK:
+	HasPilot,Major
+	IfEQ,false,DEAD
+	GetCurHealth,Major
+	IfGT,1000,CHECK
+AddHealth,Major,2000
+JumpTo,CHECK
+DEAD:
+Fail,10,"genfail.txt"
+
+[routine,Eng,1,true]
+Ally,5,6
+Wait,50
+SetPlan,"eng3.aip",6
+START:
+	Createp,Engineer,"fveng",6,"eng"
+CHECK:
+	IsAround,Engineer
+	IfEQ,true,CHECK
+Wait,900
+JumpTo,START
+
+[routine,NewObjectRoutine,1,true]
+OnNewObject,100,NewObjectRoutine,NewUnit
+START:
+RunSpeed,NewObjectRoutine,0,true
+GetByTS,Enemy_Armory,5,3
+IsAround,Enemy_Armory
+IfEQ,false,START
+GetTeam,NewUnit
+IfNE,5,START
+SetSkill,NewUnit,3
+BEGIN:
+IsODF,NewUnit,"fvscout"
+IfEQ,false,NOT_SCOUT
+GiveWeapon,NewUnit,"gquill_c"
+GiveWeapon,NewUnit,"gshield"
+JumpTo,START
+NOT_SCOUT:
+IsODF,NewUnit,"fvfish"
+IfEQ,false,NOT_DRAGOON
+GiveWeapon,NewUnit,"garc_c"
+JumpTo,START
+NOT_DRAGOON:
+IsODF,NewUnit,"fvtank"
+IfEQ,false,NOT_TANK
+GiveWeapon,NewUnit,"gomburst2_c"
+GiveWeapon,NewUnit,"gshield"
+JumpTo,START
+NOT_TANK:
+IsODF,NewUnit,"fvsent"
+IfEQ,false,NOT_SENTRY
+GiveWeapon,NewUnit,"ggauss"
+GiveWeapon,NewUnit,"gshield"
+JumpTo,START
+NOT_SENTRY:
+IsODF,NewUnit,"fvarch"
+IfEQ,false,START
+GiveWeapon,NewUnit,"gquant_c"
+GiveWeapon,NewUnit,"gabsorb"
+JumpTo,START
+
+[routine,Misc,1,true]
+Wait,15
+SpawnBirds,5,"mcwing01",0,"birds1"
+Wait,15
+SpawnBirds,5,"mcwing01",0,"birds2"
+Wait,15
+SpawnBirds,3,"mcwing01",0,"birds3"
+START: //Adding Patrol Units
+	Createp,Unit,"fvtank",5,"patrol1"
+	Patrol,Unit,"patrol1",1
+	Wait,1
+	Createp,Unit,"fvtank",5,"patrol1"
+	Patrol,Unit,"patrol1",1
+	Wait,1
+	Createp,Unit,">fvarch",5,"patrol1"
+	Patrol,Unit,"patrol1",1
+	Wait,1
+	Createp,Unit,">fvltank",5,"patrol1"
+	Patrol,Unit,"patrol1",1
+	Wait,1
+	Createp,Unit,">fvltank",5,"patrol1"
+	Patrol,Unit,"patrol1",1
+CHECK:
+	IsAround,Unit
+	IfEQ,true,CHECK
+Wait,600
+JumpTo,START
+
+[routine,ThePlayer,1,true]
+START:
+	GetPlayer,Player
+	JumpTo,START

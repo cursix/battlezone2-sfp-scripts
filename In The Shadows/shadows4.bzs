@@ -1,0 +1,177 @@
+// In The Shadows: Mission 4, "Cold Revenge"
+// By {SFP} Sonic, sonic@starfleetplatoon.com
+
+[objects]
+Player
+Major
+Recycler
+Enemy_Recycler
+Enemy_Factory
+Enemy_Armory
+Engineer
+NewUnit
+Bdog
+
+[positions]
+Eng,0,0,0
+Dogs,0,0,0
+
+[variables]
+Distance,500
+
+[text]
+Objective1,
+"Destroy The Enemy Base"
+
+Objective2,
+"Your Recycler Must Survive"
+
+[routine,Main,1,true]
+GetPlayer,Player
+GiveWeapon,Player,"gshield"
+GiveWeapon,Player,"gsonic_c"
+TeamColor,1,0,192,18
+SetScrap,1,40
+SetPlan,"its4.aip",5
+Clear
+Display,Objective1,white
+Display,Objective2,white
+Audio,"its4a.wav"
+GetByTS,Enemy_Recycler,5,1
+CHECK:
+	IsAround,Enemy_Recycler
+	IfEQ,true,CHECK
+	GetByTS,Enemy_Factory,5,2
+CHECK2:
+	IsAround,Enemy_Factory
+	IfEQ,true,CHECK2
+Clear
+Display,Objective1,green
+Audio,"its4b.wav"
+Succeed,10,"win4.txt"
+
+[routine,MyBase,1,true]
+GetByLabel,Recycler,"recy"
+START:
+	IsAround,Recycler
+	IfEQ,true,START
+Clear
+Display,Objective2,red
+Fail,10,"lose4r.txt"	
+
+[routine,TheMajor,1,true]
+GetByLabel,Major,"major"
+SetName,Major,"Thomas Stephens"
+Stop,Major,1
+RunSpeed,MajorHealth,2,true
+GiveWeapon,Major,"gquill_c"
+GiveWeapon,Major,"gshield"
+START:
+	RandJump,PATH2,PATH3
+PATH1:
+	GoTo,Major,"major1",1
+	Wait,60
+	JumpTo,START
+PATH2:
+	GoTo,Major,"major2",1
+	Wait,60
+	JumpTo,START
+PATH3:
+	GoTo,Major,"major3",1
+	Wait,90
+	JumpTo,START
+
+[routine,MajorHealth,0,false]
+CHECK:
+	HasPilot,Major
+	IfEQ,false,DEAD
+	GetCurHealth,Major
+	IfGT,1000,CHECK
+	AddHealth,Major,2000
+JumpTo,CHECK
+DEAD:
+Fail,10,"genfail.txt"
+
+[routine,Eng,1,true]
+Ally,5,6
+Wait,50
+SetPlan,"eng4.aip",6
+GetByTS,Enemy_Recycler,5,1
+GetPos,Enemy_Recycler,Eng
+AddToPos,-10,0,0,Eng
+START:
+	Create,Engineer,"fveng",6,Eng
+CHECK:
+	IsAround,Engineer
+	IfEQ,true,CHECK
+Wait,600
+IsAround,Enemy_Recycler
+IfEQ,true,START
+
+[routine,NewObjectRoutine,1,true]
+OnNewObject,100,NewObjectRoutine,NewUnit
+START:
+RunSpeed,NewObjectRoutine,0,true
+GetByTS,Enemy_Armory,5,3
+IsAround,Enemy_Armory
+IfEQ,false,START
+GetTeam,NewUnit
+IfNE,5,START
+SetSkill,NewUnit,3
+BEGIN:
+IsODF,NewUnit,"fvscout"
+IfEQ,false,NOT_SCOUT
+GiveWeapon,NewUnit,"gquill_c"
+GiveWeapon,NewUnit,"gshield"
+JumpTo,START
+NOT_SCOUT:
+IsODF,NewUnit,"fvfish"
+IfEQ,false,NOT_DRAGOON
+GiveWeapon,NewUnit,"garc_c"
+JumpTo,START
+NOT_DRAGOON:
+IsODF,NewUnit,"fvtank"
+IfEQ,false,NOT_TANK
+GiveWeapon,NewUnit,"gomburst2_c"
+GiveWeapon,NewUnit,"gshield"
+JumpTo,START
+NOT_TANK:
+IsODF,NewUnit,"fvsent"
+IfEQ,false,NOT_SENTRY
+GiveWeapon,NewUnit,"ggauss"
+GiveWeapon,NewUnit,"gshield"
+JumpTo,START
+NOT_SENTRY:
+IsODF,NewUnit,"fvarch"
+IfEQ,false,START
+GiveWeapon,NewUnit,"gquant_c"
+GiveWeapon,NewUnit,"gabsorb"
+JumpTo,START
+
+
+[routine,Misc,1,true]
+Wait,600
+START:
+	Create,Bdog,">ivbraz",5,Eng
+	Attack,Bdog,Recycler,1
+	Wait,1
+	Create,Bdog,"ivbraz",5,Eng
+	Attack,Bdog,Recycler,1
+	Wait,1
+	Create,Bdog,">ivbdtank",5,Eng
+	Attack,Bdog,Recycler,1
+	Wait,600
+	Create,Bdog,"ivbdtank",5,Eng
+	Attack,Bdog,Recycler,1
+	Create,Bdog,"ivbdtank",5,Eng
+	Attack,Bdog,Recycler,1
+	Create,Bdog,"ivbraz",5,Eng
+	Attack,Bdog,Recycler,1
+	Wait,600
+JumpTo,START
+
+
+[routine,ThePlayer,1,true]
+START:
+	GetPlayer,Player
+	JumpTo,START

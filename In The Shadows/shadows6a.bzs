@@ -1,0 +1,297 @@
+// In The Shadows: Mission 6a, "Destruction"
+// By {SFP} Sonic, sonic@starfleetplatoon.com
+
+[objects]
+Player
+Recycler
+Enemy_Recycler
+Enemy_Recycler2
+Enemy_Factory
+Enemy_Factory2
+Enemy_Armory
+Enemy_Armory2
+Engineer
+Engineer2
+Bdog
+Portal
+NewUnit
+NewUnit2
+APC
+
+[positions]
+Portal,0,0,0
+
+[variables]
+
+[text]
+Objective1,
+"Destroy all Enemy Foces"
+
+Objective2,
+"Your Recycler Must Survive!"
+
+[routine,Main,1,true]
+GetPlayer,Player
+Replace,Player,"fvtank",false
+GiveWeapon,Player,"gshield"
+GiveWeapon,Player,"gomburst2_c"
+TeamColor,1,0,192,18
+SetScrap,1,40
+RunSpeed,Main,10,true
+Ally,5,6
+Ally,5,7
+Ally,5,8
+Ally,6,7
+Ally,6,8
+Ally,7,8
+RunSpeed,Main,1,true
+SetPlan,"its6a_i.aip",5
+SetPlan,"its6a_s.aip",7
+Clear
+Display,Objective1,white
+Display,Objective2,white
+Audio,"its6a_a.wav"
+Wait,20
+GetByTS,Enemy_Recycler,7,1
+GetByTS,Enemy_Recycler2,5,1
+CHECK:
+	IsAround,Enemy_Recycler
+	IfEQ,true,CHECK
+	IsAround,Enemy_Recycler2
+	IfEQ,true,CHECK
+GetByTS,Enemy_Factory,7,2
+GetByTS,Enemy_Factory2,5,2
+CHECK2:
+	IsAround,Enemy_Factory
+	IfEQ,true,CHECK2
+	IsAround,Enemy_Factory2
+	IfEQ,true,CHECK2
+Audio,"its6a_b.wav"
+Clear
+Display,Objective1,green
+Display,Objective2,green
+Succeed,10,"win6a.txt"
+
+[routine,MyBase,1,true]
+GetByLabel,Recycler,"recy"
+START:
+	IsAround,Recycler
+	IfEQ,true,START
+Clear
+Display,Objective2,red
+Fail,10,"lose6ar.txt"	
+
+[routine,Eng,1,true]
+Wait,10
+SetPlan,"eng6a_s.aip",8
+GetByTS,Enemy_Recycler,7,1
+START:
+	Createp,Engineer,"fveng",8,"eng_s"
+CHECK:
+	IsAround,Engineer
+	IfEQ,true,CHECK
+Wait,600
+IsAround,Enemy_Recycler
+IfEQ,true,START
+
+[routine,Eng2,1,true]
+Wait,50
+SetPlan,"eng6a_i.aip",6
+GetByTS,Enemy_Recycler2,5,1
+START:
+	Createp,Engineer2,"iveng",6,"eng_i"
+CHECK:
+	IsAround,Engineer2
+	IfEQ,true,CHECK
+Wait,600
+IsAround,Enemy_Recycler2
+IfEQ,true,START
+
+[routine,NewObjectRoutine,1,true]
+OnNewObject,100,NewObjectRoutine,NewUnit
+START:
+RunSpeed,NewObjectRoutine,0,true
+GetByTS,Enemy_Armory,7,3
+IsAround,Enemy_Armory
+IfEQ,false,START
+GetTeam,NewUnit
+IfNE,5,START
+SetSkill,NewUnit,3
+BEGIN:
+IsODF,NewUnit,"fvscout"
+IfEQ,false,NOT_SCOUT
+GiveWeapon,NewUnit,"gquill_c"
+GiveWeapon,NewUnit,"gshield"
+JumpTo,START
+NOT_SCOUT:
+IsODF,NewUnit,"fvfish"
+IfEQ,false,NOT_DRAGOON
+GiveWeapon,NewUnit,"garc_c"
+JumpTo,START
+NOT_DRAGOON:
+IsODF,NewUnit,"fvtank"
+IfEQ,false,NOT_TANK
+GiveWeapon,NewUnit,"gomburst2_c"
+GiveWeapon,NewUnit,"gshield"
+JumpTo,START
+NOT_TANK:
+IsODF,NewUnit,"fvsent"
+IfEQ,false,NOT_SENTRY
+GiveWeapon,NewUnit,"ggauss"
+GiveWeapon,NewUnit,"gshield"
+JumpTo,START
+NOT_SENTRY:
+IsODF,NewUnit,"fvarch"
+IfEQ,false,START
+GiveWeapon,NewUnit,"gquant_c"
+GiveWeapon,NewUnit,"gabsorb"
+JumpTo,START
+
+[routine,NewObjectRoutine2,1,true]
+OnNewObject,100,NewObjectRoutine2,NewUnit2
+BEGIN:
+WAITING:
+GetByTS,Enemy_Armory2,5,3
+IsAround,Enemy_Armory2
+IfEQ,false,WAITING
+GetTeam,NewUnit2
+IfNE,5,WAITING
+RunSpeed,NewObjectRoutine2,0,true
+SetSkill,NewUnit2,3
+IsODF,NewUnit2,"ivscout"
+IfEQ,false,NOT_SCOUT
+GiveWeapon,NewUnit2,"gchain_c"
+GiveWeapon,NewUnit2,"gmcurmin"
+JumpTo,BEGIN
+NOT_SCOUT:
+IsODF,NewUnit2,"ivbraz"
+IfEQ,false,NOT_RAZOR
+GiveWeapon,NewUnit2,"gchain_a"
+NOT_RAZOR:
+IsODF,NewUnit2,"ivtank"
+IFEQ,false,NOT_TANK
+GiveWeapon,NewUnit2,"gspstab_c"
+NOT_TANK:
+IsODF,NewUnit2,"ivatank"
+IfEQ,false,NOT_ASS_TANK
+GiveWeapon,NewUnit2,"gplasma3_a"
+NOT_ASS_TANK:
+IsODF,NewUnit2,"ivltank"
+IfEQ,false,NOT_PUMA
+GiveWeapon,NewUnit2,"gplasma_c"
+NOT_PUMA:
+IsODF,NewUnit2,"ivmisl"
+IfEQ,false,BEGIN
+GiveWeapon,NewUnit2,"gshadow_c"
+JumpTo,BEGIN
+
+[routine,Misc,1,true]
+Wait,600
+GetByLabel,Portal,"PortalA1"
+GetPos,Portal,Portal
+AddToPos,-20,0,0,Portal
+START:
+	RandJump,ATTACKER2,ATTACKER3,ATTACKER4
+ATTACKER1:
+	Create,Bdog,">teleportout",0,Portal
+	Create,Bdog,">ivbraz",5,Portal
+	Attack,Bdog,Recycler,1
+	Wait,1
+	Create,Bdog,"teleportout",0,Portal
+	Create,Bdog,"ivbraz",5,Portal
+	Attack,Bdog,Recycler,1
+	Wait,1
+	Create,Bdog,"teleportout",0,Portal
+	Create,Bdog,"ivbraz",5,Portal
+	Attack,Bdog,Recycler,1
+	Wait,1
+	Create,Bdog,"teleportout",0,Portal
+	Create,Bdog,"ivbraz",5,Portal
+	Attack,Bdog,Recycler,1
+	Wait,600
+	JumpTo,START
+ATTACKER2:
+	Create,Bdog,"teleportout",0,Portal
+	Create,Bdog,">ivbtank",5,Portal
+	Attack,Bdog,Recycler,1
+	Wait,1
+	Create,Bdog,"teleportout",0,Portal
+	Create,Bdog,"ivbraz",5,Portal
+	Attack,Bdog,Recycler,1
+	Wait,1
+	Create,Bdog,"teleportout",0,Portal
+	Create,Bdog,"ivbdtank",5,Portal
+	Attack,Bdog,Recycler,1
+	Wait,1
+	Create,Bdog,"teleportout",0,Portal
+	Create,Bdog,"ivbraz",5,Portal
+	Attack,Bdog,Recycler,1
+	Wait,600
+	JumpTo,START
+ATTACKER3:
+	Create,Bdog,"teleportout",0,Portal
+	Create,Bdog,">ivbhraz",5,Portal
+	Attack,Bdog,Recycler,1
+	Wait,1
+	Create,Bdog,"teleportout",0,Portal
+	Create,Bdog,"ivbhraz",5,Portal
+	Attack,Bdog,Recycler,1
+	Wait,1
+	Create,Bdog,"teleportout",0,Portal
+	Create,Bdog,"ivbdtank",5,Portal
+	Attack,Bdog,Recycler,1
+	Wait,1
+	Create,Bdog,"teleportout",0,Portal
+	Create,Bdog,"ivbdtank",5,Portal
+	Attack,Bdog,Recycler,1
+	Wait,600
+	JumpTo,START
+ATTACKER4:
+	Wait,120
+	Create,Bdog,"teleportout",0,Portal
+	Create,Bdog,">ivbhraz",5,Portal
+	Attack,Bdog,Recycler,1
+	Wait,1
+	Create,Bdog,"teleportout",0,Portal
+	Create,Bdog,">ivbdwalk",5,Portal
+	Attack,Bdog,Recycler,1
+	Wait,1
+	Create,Bdog,"teleportout",0,Portal
+	Create,Bdog,"ivbdwalk",5,Portal
+	Attack,Bdog,Recycler,1
+	Wait,1
+	Create,Bdog,"teleportout",0,Portal
+	Create,Bdog,"ivbhraz",5,Portal
+	Attack,Bdog,Recycler,1
+	Wait,600
+	JumpTo,START
+
+[routine,TheAPC,1,true]
+Wait,1200
+START:
+	IsAround,Enemy_Recycler2
+	IfEQ,False,END
+//APC1
+	Create,APC,"teleportout",0,Portal
+	Create,APC,"ivapc_s",5,Portal
+	SetMaxHealth,APC,7000
+	Attack,APC,Recycler,1
+//APC2
+	Create,APC,"teleportout",0,Portal
+	Create,APC,"ivapc_s",5,Portal
+	SetMaxHealth,APC,7000
+	Attack,APC,Recycler,1
+//APC3
+	Create,APC,"teleportout",0,Portal
+	Create,APC,"ivapc_s",5,Portal
+	SetMaxHealth,APC,7000
+	Attack,APC,Recycler,1
+	Wait,300
+	JumpTo,START
+END:
+	RunSpeed,TheAPC,0,false
+
+[routine,ThePlayer,1,true]
+START:
+	GetPlayer,Player
+	JumpTo,START

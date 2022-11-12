@@ -1,0 +1,180 @@
+// The Rain Forest
+// Mission 3 Script
+// "Got your Six"
+// Scripted by {SFP} Sonic
+// Copyright The Starfleet Platoon
+
+[objects]
+Player
+Tug
+Relic
+Attacker1
+Attacker2
+Attacker3
+Attacker4
+Power1
+Power2
+DropShip
+
+[positions]
+
+[variables]
+Attacks1,0
+Attacks2,0
+Attacks3,0
+Done,0
+
+[text]
+Objective1,
+"Escort the Relic to the\nDrop Ship"
+
+Objective2,
+"Destroy the Power Generators"
+
+Objective3,
+"Defend the Drop Ship"
+
+Objective4,
+"Destroy all remaining\nISDF Units"
+
+[routine,Main,1,true]
+GetPlayer,Player
+Replace,Player,"fvtank_r3",false  // Make Player Scion
+Display,Objective1,white
+Audio,"rain3a.wav" // Voice Over
+BeaconOn,DropShip
+Set,Attacks1,1
+CHECK1:  // When is Player near Gun Tower?
+DistPath,Player,"GT"
+IfGT,300,CHECK1  // If he is 300m or further, check again
+Display,Objective2,white  // Near GTs now
+Audio,"rain3b.wav"
+BeaconOn,Power1
+BeaconOn,Power2
+POWER:  // Check Power Generators
+IsAround,Power1
+IfEQ,true,POWER
+IsAround,Power2
+IfEQ,true,POWER
+Clear
+Display,Objective1,white
+Display,Objective2,green
+Set,Attacks2,1
+CHECK2:  // How far is tug too Drop Ship?
+DistObject,Tug,DropShip
+IfGT,200,CHECK2
+Clear
+Display,Objective1,green
+Audio,"rain3c.wav"
+Set,Attacks3,1
+RunSpeed,TakeOff,1,true  // OK, Magic Time, turn on Takeoff
+Wait,5
+Display,Objective3,white
+Display,Objective4,white
+CHECK3:  // Is other Routines done?
+Add,Done,0
+IfEQ,0,CHECK3
+Clear
+Display,Objective3,green
+Display,Objective4,blue
+Audio,"rain3d.wav"
+Succeed,10,"rain3_win.txt"
+
+// Following is Magic for the Drop Ship
+[routine,TakeOff,0,false]
+SetAnimation,DropShip,"deploy",1
+StartAnimation,DropShip
+GoTo,Tug,"drop",1
+CHECK:
+DistPath,Tug,"drop"
+IfGT,30,CHECK
+RunSpeed,CheckObjective,0,false
+Remove,Tug
+Remove,Relic
+CHECK2:
+Add,Done,0
+IfEQ,0,CHECK2
+SetAnimation,DropShip,"takeoff",1
+StartAnimation,DropShip
+
+// Following attacks the Players Party
+[routine,Attackers,1,true]
+START:
+Add,Attacks1,0
+IfEQ,0,START
+ATTACKS1:
+Wait,60
+Createp,Attacker1,">ivtank_r3",5,"north"
+Attack,Attacker1,Tug,1
+Createp,Attacker2,">ivbraz_r3",5,"north"
+Attack,Attacker2,Tug,1
+Createp,Attacker3,"ivbraz_r3",5,"north"
+Attack,Attacker3,Tug,1
+Add,Attacks2,0
+IfEQ,0,ATTACKS1
+ATTACKS2:
+Wait,60
+Createp,Attacker1,"ivtank_r3",5,"east"
+Attack,Attacker1,Tug,1
+Createp,Attacker1,"ivtank_r3",5,"east"
+Attack,Attacker1,Tug,1
+Createp,Attacker1,">ivltank_r3",5,"east"
+Attack,Attacker1,Tug,1
+Createp,Attacker1,"ivltank_r3",5,"east"
+Attack,Attacker1,Tug,1
+Createp,Attacker1,">avhraz_r3",5,"east"
+Attack,Attacker1,Tug,1
+Add,Attacks3,0
+IfEQ,0,ATTACKS2
+Createp,Attacker1,"avhraz_r3",5,"east"
+Attack,Attacker1,DropShip,1
+Createp,Attacker2,"avhraz_r3",5,"east"
+Attack,Attacker2,DropShip,1
+Createp,Attacker3,"avhraz_r3",5,"east"
+Attack,Attacker3,DropShip,1
+Createp,Attacker4,"avhraz_r3",5,"east"
+Attack,Attacker4,DropShip,1
+BeaconOn,Attacker1
+BeaconOn,Attacker2
+BeaconOn,Attacker3
+BeaconOn,Attacker4
+CHECK:
+	IsAround,Attacker1
+	IfEQ,true,CHECK
+	IsAround,Attacker2
+	IfEQ,true,CHECK
+	IsAround,Attacker3
+	IfEQ,true,CHECK
+	IsAround,Attacker4
+	IfEQ,true,CHECK
+Set,Done,1
+
+// This makes sure the Tug isn't dead nor the Relic
+[routine,CheckObjective,1,true]
+Wait,10
+START:
+IsAround,Tug
+IfEQ,false,LOST
+IsAround,Relic
+IfEQ,false,LOST
+JumpTo,START
+LOST:
+Clear
+Display,Objective1,red
+Fail,10,"rain3_fail.txt"
+
+// Idenify the Objects
+[routine,GetObjects,1,true]
+GetByLabel,DropShip,"drop"
+GetByLabel,Power1,"power1"
+GetByLabel,Power2,"power2"
+GetByLabel,Relic,"relic"
+GetByLabel,Tug,"tug"
+Pickup,Tug,Relic,0
+
+// Keep track of Player
+[routine,FindPlayer,1,true]
+START:
+GetPlayer,Player
+Wait,0
+JumpTo,START

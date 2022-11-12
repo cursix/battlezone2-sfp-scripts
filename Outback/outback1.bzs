@@ -1,0 +1,203 @@
+//DLL Script for The Outback: "A Breeze?"
+//Scripted by {SFP} Sonic
+//Copyright The Starfleet Platoon 2000-2002
+
+[objects]
+Recycler
+Enemy_Recycler
+Enemy_Factory
+Intro
+Spir1
+Spir2
+Spir3
+Spir4
+Spir5
+Spir6
+Overseer
+Player
+Scrap
+Attackwav1
+Attackwav2
+Scavenger
+NewUnit
+Bomber
+
+[positions]
+
+[variables]
+TheCompForce,0
+
+[text]
+Start,
+"Start Collecting the Scrap\nFields in the area."
+
+Objective1,
+"It appears skyeye was wrong!\nLocate and destroy the/nScion's Base"
+
+Objective2,
+"Wonderful, resume collection of\nScrap"
+
+Doom,
+"Skyeye is reporting a masive\nfleet heading towrds you."
+
+Escape,
+"Commander, get out of there!"
+
+Failed,
+"Your Recycler was destroyed."
+
+
+[routine,Main,1,true]
+Wait,1
+Display,Start,white
+Audio,"outback1a.wav"
+SCAV:  //Lets locate the first scav built
+GetByLabel,Scavenger,"unnamed_ivscav1"
+IsAround,Scavenger
+IfEQ,false,SCAV
+Wait,300
+SetPlan,"outback1.aip",5
+SetScrap,5,200
+Createp,Attackwav1,"fvtank",5,"scrap5" //Now attack that scav!
+Attack,Attackwav1,Scavenger,1
+Createp,Attackwav1,"fvtank",5,"scrap5"
+Attack,Attackwav1,Scavenger,1
+Createp,Attackwav1,"fvscout",5,"scrap5"
+Attack,Attackwav1,Scavenger,1
+CHECK_ATTACKWAV1://Once attack wave gone, proceed
+IsAround,Attackwav1
+IfEQ,true,CHECK_ATTACKWAV1
+Clear
+Audio,"outback1b.wav"
+Display,Objective1,white
+CHECK_ENEMYREC:  //Is Enemy Recycler Alive?
+IsAround,Enemy_Recycler
+IfEQ,true,CHECK_ENEMYREC
+GetByTS,Enemy_Factory,5,2
+CHECK_ENEMYFACT:  //Player needs to destroy fact too!
+IsAround,Enemy_Factory
+IfEQ,true,CHECK_ENEMYFACT
+Clear
+Audio,"outback1c.wav"
+Display,Objective1,green
+Display,Objective2,white
+Wait,300
+Audio,"outback1d.wav"
+Clear
+Display,Doom,white  //My Little suprise!
+Createp,Attackwav2,"fvtankout1",5,"doom"
+Attack,Attackwav2,Recycler,5
+Createp,Attackwav2,"fvtankout1",5,"doom"
+Attack,Attackwav2,Recycler,5
+Createp,Attackwav2,"fvtankout1",5,"doom"
+Attack,Attackwav2,Recycler,5
+Createp,Attackwav2,"fvtankout1",5,"doom"
+Attack,Attackwav2,Recycler,5
+Createp,Attackwav2,"fvtankout1",5,"doom"
+Attack,Attackwav2,Recycler,5
+Createp,Attackwav2,"fvtankout1",5,"doom"
+Attack,Attackwav2,Recycler,5
+Createp,Attackwav2,"fvtankout1",5,"doom"
+Attack,Attackwav2,Recycler,5
+Createp,Attackwav2,"fvwalk",5,"doom"
+Attack,Attackwav2,Recycler,5
+Createp,Attackwav2,"fvwalk",5,"doom"
+Attack,Attackwav2,Recycler,5
+Createp,Attackwav2,"fvwalk",5,"doom"
+Attack,Attackwav2,Recycler,5
+Createp,Attackwav2,"fvwalk",5,"doom"
+Attack,Attackwav2,Recycler,5
+Createp,Attackwav2,"fvwalk",5,"doom"
+Attack,Attackwav2,Recycler,5
+Wait,25
+Remove,Recycler
+Clear
+Audio,"outback1e.wav"
+Display,Escape,red
+Succeed,10,"outback1w.txt"
+
+//Check Player's Recycler
+[routine,YourRecycler,1,true]
+Createp,Recycler,">ivrecyout1",1,"recy"
+SetScrap,1,80
+CHECK_RECY:
+IsAround,Recycler
+IfEQ,true,CHECK_RECY
+IsAround,Attackwav2
+IfEQ,true,END
+Display,Failed,red
+Fail,10,"outback1lr.txt"
+END:
+
+//Setup Scion Base
+[routine,EnemyBase,1,true]
+Createp,Enemy_Recycler,">fvrecyout1",5,"enemy_recy"
+Createp,Overseer,"fbover",5,"sat"
+Createp,Spir1,"fbspir",5,"spir1"
+Createp,Spir2,"fbspir",5,"spir2"
+Createp,Spir3,"fbspir",5,"spir3"
+Createp,Spir4,"fbspir",5,"spir4"
+Createp,Spir5,"fbspir",5,"spir5"
+Createp,Spir6,"fbspir",5,"spir6"
+
+//Give player a bit of scrap to be nice
+[routine,GivePlayerScrap,1,true]
+Wait,60
+START:
+AddScrap,1,2
+Wait,2
+CHECK:
+GetScrap,1
+IfLT,79,START
+JumpTo,CHECK
+
+//Customize Scion Units
+[routine,NewObjectRoutine,1,true]
+OnNewObject,100,NewObjectRoutine,NewUnit
+GetCompForce,TheCompForce
+Wait,600
+START:
+RunSpeed,NewObjectRoutine,0,true
+Set,TheCompForce,3
+Add,TheCompForce,0
+IfEQ,1,SMALL_FORCE
+IfEQ,2,MED_FORCE
+IfEQ,3,LARGE_FORCE
+SMALL_FORCE:
+SetSkill,NewUnit,2
+JumpTo,BEGIN
+MED_FORCE:
+SetSkill,NewUnit,3
+JumpTo,BEGIN
+LARGE_FORCE:
+SetSkill,NewUnit,4
+JumpTo,BEGIN
+BEGIN:
+IsODF,NewUnit,"fvscout"
+IfEQ,false,NOT_SCOUT
+GiveWeapon,NewUnit,"gquill_c"
+GiveWeapon,NewUnit,"gshield"
+JumpTo,START
+NOT_SCOUT:
+IsODF,NewUnit,"fvtank"
+IfEQ,false,NOT_TANK
+GiveWeapon,NewUnit,"garc_c"
+GiveWeapon,NewUnit,"gshield"
+JumpTo,START
+NOT_TANK:
+IsODF,NewUnit,"fvsent"
+IfEQ,false,NOT_SENTRY
+GiveWeapon,NewUnit,"ggaus"
+GiveWeapon,NewUnit,"gshield"
+NOT_SENTRY:
+IsODF,NewUnit,"fvarch"
+IfEQ,false,START
+GiveWeapon,NewUnit,"gabsorb"
+JumpTo,START
+
+//Keep track of Player
+[routine,FindPlayer,1,true]
+START:
+Wait,2
+GetPlayer,Player
+JumpTo,START
